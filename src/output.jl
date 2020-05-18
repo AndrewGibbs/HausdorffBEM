@@ -3,6 +3,7 @@ using GeometricalPredicates
 
 export FarField, SLP, draw
 
+#get far field pattern for Cantor set
 function FarField(𝚯::Array{Float64,1}, V::Basis, coeffs::Array{Complex{Float64},1}, k::Float64)
     Q = 2
     K(θ::Float64, y::Array{Float64,1}) = exp.(-im*k*cos.(θ)*y)
@@ -17,6 +18,7 @@ function FarField(𝚯::Array{Float64,1}, V::Basis, coeffs::Array{Complex{Float6
     return FF
 end
 
+#get far field pattern for Cantor dust
 function FarField(𝚯::Array{Float64,1}, Ψ::Array{Float64,1}, V::Basis, coeffs::Array{Complex{Float64},1}, k::Float64)
     Q = 2
     K(θ::Float64, ψ::Float64, x_1::Array{Float64,1}, x_2::Array{Float64,1}) = exp.(-im*k*(cos(θ)*x_1+sin(ψ)*x_2))
@@ -33,6 +35,7 @@ function FarField(𝚯::Array{Float64,1}, Ψ::Array{Float64,1}, V::Basis, coeffs
     return FF
 end
 
+# get scattered field for Cantor sets
 function SLP(k::Float64, V::Basis{CantorLine}, c::Array{Complex{Float64},1}, X_1::Array{Float64, 2}, X_2::Array{Float64, 2})
     ϵ = 1e-6
     Φ(x1::Float64, x2::Float64, y::Float64) = ((x1-y)^2 + x2^2) > ϵ ? im/4*besselh(0,1,k*sqrt((x1-y)^2 + x2^2)) : 0
@@ -48,6 +51,7 @@ function SLP(k::Float64, V::Basis{CantorLine}, c::Array{Complex{Float64},1}, X_1
     return u_scat
 end
 
+# get scattered field for Cantor dust
 function SLP(k::Float64, V::Basis{CantorDust}, c::Array{Complex{Float64},1}, X_1::Array{Float64, 2}, X_2::Array{Float64, 2}, X_3::Array{Float64, 2}, avoidPolys::Array{Polygon2D{Point2D},1}, Q=6)
     ϵ = 1e-6
     r(x1::Float64, x2::Float64, x3::Float64, y1::Float64, y2::Float64) = ((x1-y1)^2 + (x2-y2)^2 + x3^2)
@@ -71,6 +75,7 @@ function SLP(k::Float64, V::Basis{CantorDust}, c::Array{Complex{Float64},1}, X_1
     return u_scat
 end
 
+# draw the Cantor dust onto the current plot
 function draw(V::Basis{CantorDust}, thicken::Float64=0.05)
     ℓ = Int(round(log(4,V.DOFs)))
     α = V.elements[1].α
@@ -88,6 +93,7 @@ function draw(V::Basis{CantorDust}, thicken::Float64=0.05)
     return T
 end
 
+# draw the Cantor set onto the current plot
 function draw(V::Basis{CantorLine})
     ℓ = Int(round(log(2,V.DOFs)))
     α = V.elements[1].α

@@ -6,10 +6,13 @@ using SpecialFunctions, ProgressMeter, Plots
 
 export MakeBasis, getCollocationTestBasis, hBEMsolve, Basis, DiracDelta
 
+# Dirac delta object, for use with collocation BEM
 struct DiracDelta{T}
     supp::T
 end
 
+# a basis, which may consist of anything, but popular choices are
+# piecewise constants or delta functions
 struct Basis{T}
     elements::Array{T,1}
     DOFs::Int64
@@ -22,7 +25,7 @@ include("output.jl")
 
 # -----------------  methods for constructing BEM system ---------------#
 
-
+#function which creates a basis of piecewise constants
 function MakeBasis(C::CantorLine, ℓ::Int64)
     DOFs = 2^ℓ
     α = C.α
@@ -34,6 +37,7 @@ function MakeBasis(C::CantorLine, ℓ::Int64)
     return Basis{CantorLine}(h_basis, DOFs)
 end
 
+#function which creates a basis of piecewise constants
 function MakeBasis(C::CantorDust, ℓ::Int64)
     DOFs = 4^ℓ
     α = C.α
@@ -53,6 +57,7 @@ function MakeBasis(C::CantorDust, ℓ::Int64)
     return Basis{CantorDust}(h_basis, DOFs)
 end
 
+#function which creates a basis of dirac deltas, for use in collocation
 function getCollocationTestBasis(B::Basis)
     d_basis = Array{DiracDelta}(undef, B.DOFs)
     T = typeof(midpoint(B.elements[1]))
@@ -63,6 +68,9 @@ function getCollocationTestBasis(B::Basis)
 end
 
 
+# the main BEM solver. V should always be a basis of constant functions
+# W can be a basis of constant functions (Galerkin) or deltas (colllocation),
+# the InnerProduct function is overloaded so can interpret either.
 function hBEMsolve(K::Kernel, f::Function, V::Basis, W::Basis, Q::Int64)
     #contruct the basis:
     DOFs = V.DOFs
@@ -91,8 +99,10 @@ function hBEMsolve(K::Kernel, f::Function, V::Basis, W::Basis, Q::Int64)
     return x
 end
 
+#default to test and trial space the same, if only one basis is provided
 hBEMsolve(K, f::Function, V::Basis, Q::Int64) = hBEMsolve(K, f, V, V, Q)
-# define alt version incase only a function is provided
+
+# following handles case where Function is provided instead of Kernel object
 hBEMsolve(K::Function, f::Function, V::Basis, W::Basis, Q::Int64) = hBEMsolve(KernelBasic(K), f, V, W, Q)
 
 end

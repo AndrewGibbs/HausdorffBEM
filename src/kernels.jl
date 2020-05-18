@@ -1,18 +1,22 @@
 abstract type Kernel end
 
+export KernelBasic, KernelSingInfo, Kernel, Helmholtz2DscreenKernel
+export Helmholtz3DscreenKernel
+
+# simple kernel definition:
 struct KernelBasic <: Kernel
     Φ::Function
 end
 
-export KernelBasic, KernelSingInfo, Kernel, Helmholtz2DscreenKernel
-export Helmholtz3DscreenKernel
-
+# more complicated kernel def, which can separate singular part
 struct KernelSingInfo  <: Kernel
     Φ::Function #the default value for the Kernel
     φ::Function #the kernel minus the singular part
     J_k::Function
 end
 
+# a function which creates and returns the standard Helmholtz Green's function
+# in n=2, with singular part separate
 function Helmholtz2DscreenKernel(C::CantorLine, k::Float64)
     Φ(x::Float64, y::Float64) = im/4*besselh(0,1,k*abs(x-y))
     small_threshold = 10^-14
@@ -25,13 +29,15 @@ function Helmholtz2DscreenKernel(C::CantorLine, k::Float64)
     Qbig = 10 # 14 is the highest my laptop can handle without laptop crashing
     (x,y,w) = HausdorffMidRuleGalerkin(Γ1,Γ2,Qbig,Qbig)
     I_0 = (1/0.5)*(0.5*log(α) +2*sum([w[i]*log(abs(x[i]-y[i])) for i in 1:length(x)]))
-
+    #print(2*sum([w[i]*log(abs(x[i]-y[i])) for i in 1:length(x)]))
     #now create J_k as a function, which is the integral of Φ-φ over Γ_ℓ^j×Γ_ℓ^j
 
     J_k(ℓ::Int64) =  - log(k/2)/(2π*2^(2ℓ)) - (2.0)^(-2*ℓ)*(I_0 + ℓ*log(α))/(2π)
     return KernelSingInfo(Φ,φ,J_k)
 end
 
+# a function which creates and returns the standard Helmholtz Green's function
+# in n=3, with singular part separate
 function Helmholtz3DscreenKernel(C::CantorDust, k::Float64)
     r(x1::Float64,x2::Float64,y1::Float64,y2::Float64) = sqrt((x1-y1)^2 + (x2 - y2)^2)
     Φ(x1::Float64,x2::Float64,y1::Float64,y2::Float64)  = exp.(im*k*r(x1,x2,y1,y2))./(4π*k*r(x1,x2,y1,y2))
