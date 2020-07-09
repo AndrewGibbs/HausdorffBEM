@@ -1,7 +1,7 @@
 export InnerProduct
 
 # -----------------  methods for quadrature ---------------#
-
+#
 #midpoint rule for Cantor sets
 function HausdorffMidRule(C::CantorLine,Q::Int64)
     M = getAllIndices(Q)
