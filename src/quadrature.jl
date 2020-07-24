@@ -110,7 +110,7 @@ function InnerProduct(K::Kernel, d::DiracDelta, C::CantorLine, Q::Int64)
 end
 
 # inner product for constant functions on Cantor dust with delta
-function InnerProduct(K::Kernel, d::DiracDelta, C::CantorLine, Q::Int64)
+function InnerProduct(K::Kernel, d::DiracDelta, C::CantorDust, Q::Int64)
     (x,y,w) = HausdorffMidRule(C,Q)
     I = sum(w.*(K.Φ).(x,y,d.supp[1],d.supp[2]))
 end
